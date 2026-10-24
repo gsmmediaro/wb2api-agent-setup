@@ -1,0 +1,14 @@
+# State that must never reach git
+.env
+accounts/
+usage/
+catalog/
+pricing/
+*.log
+*.key
+
+# Local tooling
+__pycache__/
+*.pyc
+.venv/
+.DS_Store

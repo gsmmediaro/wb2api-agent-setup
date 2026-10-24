@@ -1,0 +1,20 @@
+# Gateway service only. The upstream project ships this file too; this copy
+# pins the image, reads settings from .env, and keeps state in gitignored dirs.
+services:
+  wb-proxy:
+    image: ghcr.io/ardeyouxipianyi/workbuddy2api-hub:${WB2API_TAG:-latest}
+    container_name: wb-proxy
+    restart: unless-stopped
+    user: "${PUID:-0}:${PGID:-0}"
+    ports:
+      # Bind to loopback. tailnet-expose.sh adds the private listener.
+      - "127.0.0.1:${WB2API_PORT:-8788}:8788"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8788
+      - TZ=${TZ:-UTC}
+      # Leave empty and the gateway generates a key on first start.
+      - API_KEY=${WB2API_API_KEY:-}
+    volumes:
+      - ./accounts:/app/accounts
+      - ./usage:/app/usage

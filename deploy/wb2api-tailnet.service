@@ -1,0 +1,12 @@
+[Unit]
+Description=Expose wb2api on the tailnet interface only
+After=network-online.target tailscaled.service
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/bin/socat TCP-LISTEN:__PORT__,bind=__TS_IP__,fork,reuseaddr TCP:127.0.0.1:__PORT__
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

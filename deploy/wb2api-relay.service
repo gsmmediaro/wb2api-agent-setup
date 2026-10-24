@@ -1,0 +1,13 @@
+[Unit]
+Description=Relay the wb2api gateway into the docker bridge
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+# Containers on the docker bridge reach the host gateway through this listener.
+ExecStart=/usr/bin/socat TCP-LISTEN:18789,bind=172.18.0.1,fork,reuseaddr TCP:127.0.0.1:8788
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
