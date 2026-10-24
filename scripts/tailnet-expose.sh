@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Expose the gateway on the tailnet address only, through two systemd units.
+# Expose the gateway on the tailnet address only, through one systemd unit.
 #
 #   sudo bash scripts/tailnet-expose.sh
 #   sudo bash scripts/tailnet-expose.sh --remove

@@ -88,7 +88,7 @@ or 403 means the upstream account is cooling down or restricted.
 sudo bash scripts/tailnet-expose.sh
 ```
 
-The script installs two systemd units and binds `8788` to the Tailscale address
+The script installs one systemd unit and binds `8788` to the Tailscale address
 only. Nothing listens on a public interface. Check with:
 
 ```sh
@@ -152,10 +152,10 @@ The shim exists because most tools send a placeholder key or none. It rewrites
 | `scripts/up.sh` | start, wait for the panel, print the URL |
 | `scripts/api-key.sh` | read the key from the gateway state |
 | `scripts/health.sh` | pool check, optional live completion |
-| `scripts/tailnet-expose.sh` | tailnet-only listeners as systemd units |
+| `scripts/tailnet-expose.sh` | tailnet-only listener as a systemd unit |
 | `scripts/wb2api-shim.py` | localhost to remote gateway, injects the key |
 | `scripts/wire-pi-models.py` | write pi providers for the gateway |
-| `deploy/*.service` | unit files the scripts install |
+| `deploy/wb2api-tailnet.service` | the unit `tailnet-expose.sh` installs |
 | `docs/pi.md` | pi model wiring and pinned providers |
 | `docs/troubleshooting.md` | the failures you will actually hit |
 | `AGENTS.md` | instructions written for an agent, not a human |
