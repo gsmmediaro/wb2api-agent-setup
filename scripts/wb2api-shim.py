@@ -50,19 +50,32 @@ def ensure_auth(head: bytes, key: str) -> bytes:
 
     - no Authorization header -> add one
     - Authorization with a placeholder token -> replace it
-    - ?key=<wrong> in the request line -> replace it
+    - ?key=<wrong> -> replace it, matching the parameter name exactly
     A key that already matches passes through untouched.
+
+    Also forces Connection: close. This shim rewrites one request head and then
+    relays the raw stream, so a second request on a reused keep-alive
+    connection would go out with the client's placeholder key and 401. Closing
+    after each response costs one TCP handshake per request and keeps every
+    request on the rewrite path.
     """
     lines = head.split(b"\r\n")
 
     parts = lines[0].split(b" ")
-    if len(parts) >= 2 and b"key=" in parts[1]:
-        path = parts[1]
-        pre, _, rest = path.partition(b"key=")
-        token = rest.split(b"&", 1)[0]
-        if token.lower() in PLACEHOLDERS or token.decode(errors="replace") != key:
-            tail = b"&" + rest.split(b"&", 1)[1] if b"&" in rest else b""
-            parts[1] = pre + b"key=" + key.encode() + tail
+    if len(parts) >= 2 and b"?" in parts[1]:
+        base, _, query = parts[1].partition(b"?")
+        params = query.split(b"&")
+        changed = False
+        for i, param in enumerate(params):
+            name, sep, value = param.partition(b"=")
+            # "monkey=" and "apikey=" contain "key=" but are not the key param.
+            if not sep or name != b"key":
+                continue
+            if value.lower() in PLACEHOLDERS or value.decode(errors="replace") != key:
+                params[i] = name + b"=" + key.encode()
+                changed = True
+        if changed:
+            parts[1] = base + b"?" + b"&".join(params)
             lines[0] = b" ".join(parts)
 
     replaced = False
@@ -76,6 +89,9 @@ def ensure_auth(head: bytes, key: str) -> bytes:
             break
     if not replaced:
         lines.insert(1, f"Authorization: Bearer {key}".encode())
+
+    lines = [ln for ln in lines if not ln.lower().startswith(b"connection:")]
+    lines.insert(1, b"Connection: close")
     return b"\r\n".join(lines)
 
 

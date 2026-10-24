@@ -35,7 +35,11 @@ if "--list" in args:
 
 want = None
 if "--name" in args:
-    want = args[args.index("--name") + 1]
+    idx = args.index("--name")
+    if idx + 1 >= len(args):
+        sys.stderr.write("--name needs a value, for example --name pi\n")
+        sys.exit(2)
+    want = args[idx + 1]
 
 live = [e for e in keys if e.get("enabled") and not e.get("deleted_at")]
 if want:
